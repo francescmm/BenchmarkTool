@@ -10,5 +10,5 @@ Follow the instructions for usage:
 
 1. Create an instance: QBenchmarkRegisterer::getInstance();
 2. If you want, add a different output format by using:  QBenchmarkRegisterer::getInstance()->setOutputFormat(...).
-3. If you want to retrieve the current tree view, call you do: std::string output; output << QBenchmarkRegisterer::getInstance();
+3. If you want to retrieve the current tree view, you can do the following method call: std::string output; output << QBenchmarkRegisterer::getInstance();
 
