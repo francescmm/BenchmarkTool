@@ -92,7 +92,7 @@ QBenchmarkNode *QBenchmarkNode::getNextOpenChild()
    return this;
 }
 
-QBenchmarkNode *QBenchmarkNode::searchParent(const std::string &nodeName)
+QBenchmarkNode *QBenchmarkNode::getRelativeByName(const std::string &nodeName)
 {
    if (mParent)
    {
@@ -102,18 +102,8 @@ QBenchmarkNode *QBenchmarkNode::searchParent(const std::string &nodeName)
             return child.get();
       }
 
-      QBenchmarkNode *node = nullptr;
-
-      for (const auto &child : mParent->mChildren)
-      {
-         if (child.get() != this && !child->isClosed())
-         {
-            node = child->searchParent(nodeName);
-
-            if (node)
-               return node;
-         }
-      }
+      if (mParent)
+          return mParent->getRelativeByName(nodeName);
    }
 
    return nullptr;
