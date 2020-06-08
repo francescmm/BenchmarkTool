@@ -37,17 +37,7 @@ QBenchmarkRegisterer::~QBenchmarkRegisterer()
 
 void QBenchmarkRegisterer::startBenchmark(const std::string &methodName)
 {
-   std::lock_guard<std::mutex> lock { mMutex };
-
-   std::stringstream ss;
-   ss << std::this_thread::get_id();
-
-   const auto threadId = ss.str();
-
-   if (auto iter = mActiveNode.find(threadId); iter != mActiveNode.end())
-      mActiveNode[threadId] = mActiveNode[threadId]->addChild(methodName, threadId);
-   else
-      mActiveNode[threadId] = mRootNode->addChild(methodName, threadId);
+   startBenchmark(methodName, "");
 }
 
 void QBenchmarkRegisterer::startBenchmark(const std::string &methodName, const std::string &comment)
@@ -58,7 +48,11 @@ void QBenchmarkRegisterer::startBenchmark(const std::string &methodName, const s
    ss << std::this_thread::get_id();
 
    const auto threadId = ss.str();
-   mActiveNode[threadId] = mActiveNode[threadId]->addChild(methodName, comment, threadId);
+
+   if (auto iter = mActiveNode.find(threadId); iter != mActiveNode.end() && !iter->second->isClosed())
+      mActiveNode[threadId] = iter->second->addChild(methodName, comment, threadId);
+   else
+      mActiveNode[threadId] = mRootNode->addChild(methodName, comment, threadId);
 }
 
 void QBenchmarkRegisterer::endBenchmark(const std::string &methodName)
@@ -68,15 +62,19 @@ void QBenchmarkRegisterer::endBenchmark(const std::string &methodName)
    std::stringstream ss;
    ss << std::this_thread::get_id();
    const auto threadId = ss.str();
+   const auto iter = mActiveNode.find(threadId);
 
-   if (mActiveNode[threadId]->getNodeName() == methodName)
+   if (iter == mActiveNode.end())
+      return;
+
+   if (iter->second->getNodeName() == methodName)
    {
-      mActiveNode[threadId]->close();
-      mActiveNode[threadId] = mActiveNode[threadId]->getNextOpenChild();
+      iter->second->close();
+      mActiveNode[threadId] = iter->second->getNextOpenChild();
    }
    else
    {
-      auto node = mActiveNode[threadId]->searchParent(methodName);
+      auto node = iter->second->searchParent(methodName);
 
       if (node)
       {
