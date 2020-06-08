@@ -72,15 +72,10 @@ void QBenchmarkRegisterer::endBenchmark(const std::string &methodName)
       iter->second->close();
       mActiveNode[threadId] = iter->second->getNextOpenChild();
    }
-   else
+   else if (auto node = iter->second->searchParent(methodName))
    {
-      auto node = iter->second->searchParent(methodName);
-
-      if (node)
-      {
-         node->close();
-         mActiveNode[threadId] = node->getParent();
-      }
+      node->close();
+      mActiveNode[threadId] = node->getParent();
    }
 }
 

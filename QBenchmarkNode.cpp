@@ -81,8 +81,10 @@ QBenchmarkNode *QBenchmarkNode::addChild(const std::string &nodeName, const std:
 QBenchmarkNode *QBenchmarkNode::getNextOpenChild()
 {
    for (const auto &child : mChildren)
+   {
       if (!child->isClosed())
          return child.get();
+   }
 
    if (mLocked && mParent)
       return mParent->getNextOpenChild();
@@ -126,8 +128,10 @@ void QBenchmarkNode::close(Flag flag)
       mFlag = flag;
 
       for (const auto &child : mChildren)
+      {
          if (!child.get()->isClosed())
             child.get()->close(Flag::ForceClosed);
+      }
    }
 }
 
