@@ -13,4 +13,5 @@ include($$PWD/../QBenchmarkLib/QBenchmark.pri)
 
 SOURCES +=  \
     main.cpp \
+    test_QBenchmark.cpp \
     test_QBenchmarkNode.cpp

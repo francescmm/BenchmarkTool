@@ -30,7 +30,11 @@
 #include <iostream>
 
 #include <QBenchmarkNode.h>
+#include "QBenchmarkTimeProvider.h"
+
 #include <sstream>
+#include <memory>
+
 namespace QBenchmark
 {
 
@@ -44,7 +48,7 @@ public:
       PlainText
    };
 
-   static QBenchmarkRegisterer &getInstance();
+   static QBenchmarkRegisterer &getInstance(std::shared_ptr<ITimeProvider> timeProvider = std::make_shared<QBenchmarkTimeProvider>());
 
    ~QBenchmarkRegisterer();
 
@@ -54,11 +58,13 @@ public:
 
    void setOutputFormat(OutputFormat outputFormat) { mFileFormat = outputFormat; }
 
+   friend std::string &operator<<(std::string &out, const QBenchmarkRegisterer &node);
    friend std::ostream &operator<<(std::ostream &out, const QBenchmarkRegisterer &node);
 
 private:
-   QBenchmarkRegisterer();
+   QBenchmarkRegisterer(std::shared_ptr<ITimeProvider> timeProvider);
 
+   std::shared_ptr<ITimeProvider> mTimeProvider = nullptr;
    std::mutex mMutex;
    std::unique_ptr<QBenchmarkNode> mRootNode;
    std::map<std::string, QBenchmarkNode *> mActiveNode;

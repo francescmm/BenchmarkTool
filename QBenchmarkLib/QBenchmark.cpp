@@ -7,20 +7,21 @@
 namespace QBenchmark
 {
 
-QBenchmarkRegisterer &QBenchmarkRegisterer::getInstance()
+QBenchmarkRegisterer &QBenchmarkRegisterer::getInstance(std::shared_ptr<ITimeProvider> timeProvider)
 {
-   static QBenchmarkRegisterer instance;
+   static QBenchmarkRegisterer instance(timeProvider);
 
    return instance;
 }
 
-QBenchmarkRegisterer::QBenchmarkRegisterer()
+QBenchmarkRegisterer::QBenchmarkRegisterer(std::shared_ptr<ITimeProvider> timeProvider)
+   : mTimeProvider(timeProvider)
 {
    std::stringstream ss;
    ss << std::this_thread::get_id();
 
    mThreadId = ss.str();
-   mRootNode = std::make_unique<QBenchmarkNode>("QBenchmarkRegisterer", mThreadId, nullptr);
+   mRootNode = std::make_unique<QBenchmarkNode>("QBenchmarkRegisterer", mThreadId, nullptr, mTimeProvider.get());
    mActiveNode[mThreadId] = mRootNode.get();
 }
 
@@ -77,6 +78,13 @@ void QBenchmarkRegisterer::endBenchmark(const std::string &methodName)
       node->close();
       mActiveNode[threadId] = node->getParent();
    }
+}
+
+std::string &operator<<(std::string &out, const QBenchmarkRegisterer &node)
+{
+    out << (*node.mRootNode.get());
+
+    return out;
 }
 
 std::ostream &operator<<(std::ostream &out, const QBenchmarkRegisterer &node)

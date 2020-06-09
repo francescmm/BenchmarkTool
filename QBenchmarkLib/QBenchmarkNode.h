@@ -21,10 +21,11 @@
  ** Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
  ***************************************************************************************/
 
-#include <chrono>
 #include <memory>
 #include <string>
 #include <vector>
+
+#include <QBenchmarkTimeProvider.h>
 
 namespace QBenchmark
 {
@@ -37,13 +38,18 @@ public:
         None,
         ForceClosed
     };
-    explicit QBenchmarkNode(const std::string& nodeName, const std::string& threadId, QBenchmarkNode* parent) noexcept;
+    explicit QBenchmarkNode(const std::string& nodeName,
+                            const std::string& threadId,
+                            QBenchmarkNode* parent,
+                            ITimeProvider* provider) noexcept;
+
     ~QBenchmarkNode() = default;
 
     bool operator==(const QBenchmarkNode& node) const;
     bool operator!=(const QBenchmarkNode& node) const;
 
     friend std::ostream& operator<<(std::ostream& out, const QBenchmarkNode& node);
+    friend std::string& operator<<(std::string& out, const QBenchmarkNode& node);
 
     QBenchmarkNode* addChild(const std::string& nodeName, const std::string& comment, const std::string& threadId);
     QBenchmarkNode* addChild(const std::string& nodeName, const std::string& comment);
@@ -57,9 +63,13 @@ public:
     std::string getNodeName() const { return mNodeName; }
     int getLevel() const { return mLevel; }
 
+    double getDuration() const;
+
     void addComment(const std::string& comment) { mComment = comment; }
 
 private:
+    ITimeProvider* timeProvider = nullptr;
+
     std::string mNodeName;
     std::chrono::microseconds mStartTime;
     std::chrono::microseconds mEndTime;

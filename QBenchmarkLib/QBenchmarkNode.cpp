@@ -1,19 +1,19 @@
 #include "QBenchmarkNode.h"
 
-using namespace std::chrono;
-
 namespace QBenchmark
 {
 
 QBenchmarkNode::QBenchmarkNode(const std::string &nodeName, const std::string &threadId,
-                               QBenchmarkNode *parent) noexcept
-   : mNodeName(nodeName)
-   , mStartTime(duration_cast<microseconds>(system_clock::now().time_since_epoch()))
+                               QBenchmarkNode *parent, ITimeProvider* provider) noexcept
+   : timeProvider(provider)
+   , mNodeName(nodeName)
    , mParent(parent)
    , mThreadId(threadId)
 {
    if (parent)
       mLevel = parent->getLevel() + 1;
+
+   mStartTime = timeProvider->getTimeSinceEpochMsecs();
 }
 
 bool QBenchmarkNode::operator==(const QBenchmarkNode &node) const
@@ -23,48 +23,50 @@ bool QBenchmarkNode::operator==(const QBenchmarkNode &node) const
 
 bool QBenchmarkNode::operator!=(const QBenchmarkNode &node) const
 {
-   return !(*this == node);
+    return !(*this == node);
+}
+
+std::string &operator<<(std::string &out, const QBenchmarkNode &node)
+{
+    for (auto i = 0; i < node.mLevel; ++i)
+        out += "  ";
+
+    out.append("[" + node.mThreadId + "] {" + node.mNodeName + "}");
+
+    if (!node.mLocked)
+        out.append(" - Method not closed yet!");
+    else
+    {
+        out.append(" done in {" + std::to_string(node.getDuration()) + "} msec.");
+
+        if (!node.mComment.empty())
+            out += " - Comments {" + node.mComment + "}";
+
+        if (node.mFlag != QBenchmarkNode::Flag::None)
+            out.append(" - Force closed");
+    }
+
+    out.append("\n");
+
+    for (const auto &child : node.mChildren)
+        out << *(child.get());
+
+    return out;
 }
 
 std::ostream &operator<<(std::ostream &out, const QBenchmarkNode &node)
 {
    std::string msg;
-   for (auto i = 0; i < node.mLevel; ++i)
-      msg += "  ";
 
-   msg.append("[" + node.mThreadId + "] {" + node.mNodeName + "}");
-
-   if (!node.mLocked)
-   {
-      msg.append(" - Method not closed yet!");
-
-      out << msg;
-   }
-   else
-   {
-      const auto totalTime = node.mEndTime.count() - node.mStartTime.count();
-      msg.append(" done in {" + std::to_string(static_cast<double>(totalTime) / 1000) + "} msec.");
-
-      if (!node.mComment.empty())
-         msg += " - Comments {" + node.mComment + "}";
-
-      if (node.mFlag != QBenchmarkNode::Flag::None)
-         msg.append(" - Force closed");
-
-      msg.append("\n");
-
-      out << msg;
-
-      for (const auto &child : node.mChildren)
-         out << *(child.get());
-   }
+   msg << node;
+   out << msg;
 
    return out;
 }
 
 QBenchmarkNode *QBenchmarkNode::addChild(const std::string &nodeName, const std::string &threadId)
 {
-   mChildren.push_back(std::make_unique<QBenchmarkNode>(nodeName, threadId, this));
+   mChildren.push_back(std::make_unique<QBenchmarkNode>(nodeName, threadId, this, this->timeProvider));
 
    return mChildren.back().get();
 }
@@ -72,7 +74,7 @@ QBenchmarkNode *QBenchmarkNode::addChild(const std::string &nodeName, const std:
 QBenchmarkNode *QBenchmarkNode::addChild(const std::string &nodeName, const std::string &comment,
                                          const std::string &threadId)
 {
-   mChildren.push_back(std::make_unique<QBenchmarkNode>(nodeName, threadId, this));
+   mChildren.push_back(std::make_unique<QBenchmarkNode>(nodeName, threadId, this, this->timeProvider));
    mChildren.back()->addComment(comment);
 
    return mChildren.back().get();
@@ -113,7 +115,7 @@ void QBenchmarkNode::close(Flag flag)
 {
    if (!mLocked)
    {
-      mEndTime = duration_cast<microseconds>(system_clock::now().time_since_epoch());
+      mEndTime = timeProvider->getTimeSinceEpochMsecs();
       mLocked = true;
       mFlag = flag;
 
@@ -123,6 +125,11 @@ void QBenchmarkNode::close(Flag flag)
             child.get()->close(Flag::ForceClosed);
       }
    }
+}
+
+double QBenchmarkNode::getDuration() const
+{
+   return mLocked ? static_cast<double>((mEndTime.count() - mStartTime.count()) / 1000) : -1;
 }
 
 }

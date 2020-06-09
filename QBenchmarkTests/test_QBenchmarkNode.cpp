@@ -6,26 +6,36 @@
 
 using namespace QBenchmark;
 
+class MyTimeProvider : public ITimeProvider
+{
+public:
+    MyTimeProvider() = default;
+    std::chrono::microseconds getTimeSinceEpochMsecs() const override { return std::chrono::microseconds(0); }
+};
+
 TEST_CASE("Default values", "[QBenchmarkNode]")
 {
+    MyTimeProvider timeProvider;
     const std::string nodeName = "Node1";
     const std::string threadId = "0";
 
-    QBenchmarkNode node(nodeName, threadId, nullptr);
+    QBenchmarkNode node(nodeName, threadId, nullptr, &timeProvider);
 
     REQUIRE(node.isClosed() == false);
     REQUIRE(node.getLevel() == 0);
     REQUIRE(node.getParent() == nullptr);
     REQUIRE(node.getNodeName() == nodeName);
     REQUIRE(node.getNextOpenChild() == &node);
+    REQUIRE(node.getDuration() == -1);
 }
 
 TEST_CASE("Closed node", "[QBenchmarkNode]")
 {
+    MyTimeProvider timeProvider;
     const std::string nodeName = "Node1";
     const std::string threadId = "0";
 
-    QBenchmarkNode node(nodeName, threadId, nullptr);
+    QBenchmarkNode node(nodeName, threadId, nullptr, &timeProvider);
     node.close();
 
     REQUIRE(node.isClosed() == true);
@@ -33,15 +43,17 @@ TEST_CASE("Closed node", "[QBenchmarkNode]")
     REQUIRE(node.getParent() == nullptr);
     REQUIRE(node.getNodeName() == nodeName);
     REQUIRE(node.getNextOpenChild() == &node);
+    REQUIRE(node.getDuration() == 0);
 }
 
 TEST_CASE("1 child with parent. Parent without childs.", "[QBenchmarkNode]")
 {
+    MyTimeProvider timeProvider;
     const std::string nodeName = "Node2";
     const std::string threadId = "0";
 
-    QBenchmarkNode node("Node1", threadId, nullptr);
-    QBenchmarkNode child(nodeName, threadId, &node);
+    QBenchmarkNode node("Node1", threadId, nullptr, &timeProvider);
+    QBenchmarkNode child(nodeName, threadId, &node, &timeProvider);
 
     REQUIRE(node.getLevel() == 0);
 
@@ -59,10 +71,11 @@ TEST_CASE("1 child with parent. Parent without childs.", "[QBenchmarkNode]")
 TEST_CASE("2 children with parent. Parent without child.", "[QBenchmarkNode]")
 {
     const std::string threadId = "0";
+    MyTimeProvider timeProvider;
 
-    QBenchmarkNode node("Node1", threadId, nullptr);
-    QBenchmarkNode child1("Child 1", threadId, &node);
-    QBenchmarkNode child2("Child 2", threadId, &node);
+    QBenchmarkNode node("Node1", threadId, nullptr, &timeProvider);
+    QBenchmarkNode child1("Child 1", threadId, &node, &timeProvider);
+    QBenchmarkNode child2("Child 2", threadId, &node, &timeProvider);
 
     REQUIRE(node.getLevel() == 0);
     REQUIRE(child1.getLevel() == 1);
@@ -77,8 +90,9 @@ TEST_CASE("2 children with parent. Parent without child.", "[QBenchmarkNode]")
 TEST_CASE("1 grandchild with parent", "[QBenchmarkNode]")
 {
     const std::string threadId = "0";
+    MyTimeProvider timeProvider;
 
-    QBenchmarkNode node("Node1", threadId, nullptr);
+    QBenchmarkNode node("Node1", threadId, nullptr, &timeProvider);
     const auto child1 = node.addChild("Child 1", "", threadId);
     const auto child2 = child1->addChild("Child 2", "", threadId);
 
@@ -92,9 +106,10 @@ TEST_CASE("1 grandchild with parent", "[QBenchmarkNode]")
 
 TEST_CASE("Getting 2 open relatives", "[QBenchmarkNode]")
 {
+    MyTimeProvider timeProvider;
     const std::string threadId = "0";
 
-    QBenchmarkNode node("Node1", threadId, nullptr);
+    QBenchmarkNode node("Node1", threadId, nullptr, &timeProvider);
     const auto child1 = node.addChild("Child 1", "", threadId);
     const auto uncle1 = node.addChild("Uncle 1", "", threadId);
     const auto uncle2 = node.addChild("Uncle 2", "", threadId);
@@ -108,9 +123,10 @@ TEST_CASE("Getting 2 open relatives", "[QBenchmarkNode]")
 
 TEST_CASE("Getting 1 open relative", "[QBenchmarkNode]")
 {
+    MyTimeProvider timeProvider;
     const std::string threadId = "0";
 
-    QBenchmarkNode node("Node1", threadId, nullptr);
+    QBenchmarkNode node("Node1", threadId, nullptr, &timeProvider);
     const auto child1 = node.addChild("Child 1", "", threadId);
     const auto uncle1 = node.addChild("Uncle 1", "", threadId);
     const auto uncle2 = node.addChild("Uncle 2", "", threadId);
@@ -122,4 +138,21 @@ TEST_CASE("Getting 1 open relative", "[QBenchmarkNode]")
     REQUIRE(child3->getRelativeByName("Node") == nullptr);
     REQUIRE(child3->getRelativeByName("Uncle 1") == nullptr);
     REQUIRE(child3->getRelativeByName("Uncle 2") == uncle2);
+}
+
+TEST_CASE("Node output", "[QBenchmarkNode]")
+{
+    MyTimeProvider timeProvider;
+    const std::string threadId = "0";
+
+    QBenchmarkNode node("Node1", threadId, nullptr, &timeProvider);
+    node.addChild("Child 1", "", threadId);
+
+    node.close();
+
+    std::string expectedOutput = "[0] {Node1} done in {0.000000} msec.\n  [0] {Child 1} done in {0.000000} msec. - Force closed\n";
+    std::string realOutput;
+    realOutput << node;
+
+    REQUIRE(expectedOutput == realOutput);
 }
