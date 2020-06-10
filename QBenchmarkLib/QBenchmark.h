@@ -72,13 +72,27 @@ private:
    OutputFormat mFileFormat = OutputFormat::PlainText;
 };
 
+#ifndef PLATFORM_WINDOWS
 #ifndef QBenchmarkStart
 #   define QBenchmarkStart() QBenchmarkRegisterer::getInstance().startBenchmark(__PRETTY_FUNCTION__)
 #   define QBenchmarkStartMsg(msg) QBenchmarkRegisterer::getInstance().startBenchmark(__PRETTY_FUNCTION__, msg)
 #endif
+#else
+#ifndef QBenchmarkStart
+#   define QBenchmarkStart() QBenchmarkRegisterer::getInstance().startBenchmark(__FUNCSIG__)
+#   define QBenchmarkStartMsg(msg) QBenchmarkRegisterer::getInstance().startBenchmark(__FUNCSIG__, msg)
+#endif
+#endif
 
+
+#ifndef PLATFORM_WINDOWS
 #ifndef QBenchmarkEnd
 #   define QBenchmarkEnd() QBenchmarkRegisterer::getInstance().endBenchmark(__PRETTY_FUNCTION__)
+#endif
+#else
+#ifndef QBenchmarkEnd
+#   define QBenchmarkEnd() QBenchmarkRegisterer::getInstance().endBenchmark(__FUNCSIG__)
+#endif
 #endif
 
 }
