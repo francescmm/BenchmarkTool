@@ -1,7 +1,7 @@
 #pragma once
 
 /****************************************************************************************
- ** QBenchmark is a library to register benchmarks of a process.
+ ** BenchmarkTool is a library to register benchmarks of a process.
  **
  ** LinkedIn: www.linkedin.com/in/cescmm/
  ** Web: www.francescmm.com
@@ -23,12 +23,12 @@
 
 #include <ITimeProvider.h>
 
-namespace QBenchmark {
+namespace GitQlientTools {
 
-class QBenchmarkTimeProvider : public ITimeProvider
+class TimeProvider : public ITimeProvider
 {
 public:
-    QBenchmarkTimeProvider() = default;
+    TimeProvider() = default;
 
     std::chrono::microseconds getTimeSinceEpochMsecs() const override;
 };

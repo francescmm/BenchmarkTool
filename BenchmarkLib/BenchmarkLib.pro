@@ -1,13 +1,13 @@
 QT       -= gui
 
-TARGET = QBenchmark
+TARGET = BenchmarkTool
 TEMPLATE = lib
 CONFIG += static
 
-include(QBenchmark.pri)
+include(BenchmarkTool.pri)
 
 QMAKE_CXXFLAGS += -std=c++17
 
 debug {
-   TARGET = QBenchmarkd
+   TARGET = BenchmarkToold
 }

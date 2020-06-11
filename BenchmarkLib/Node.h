@@ -1,7 +1,7 @@
 #pragma once
 
 /****************************************************************************************
- ** QBenchmark is a library to register benchmarks of a process.
+ ** BenchmarkTool is a library to register benchmarks of a process.
  **
  ** LinkedIn: www.linkedin.com/in/cescmm/
  ** Web: www.francescmm.com
@@ -25,12 +25,12 @@
 #include <string>
 #include <vector>
 
-#include <QBenchmarkTimeProvider.h>
+#include <TimeProvider.h>
 
-namespace QBenchmark
+namespace GitQlientTools
 {
 
-class QBenchmarkNode
+class Node
 {
 public:
     enum class Flag
@@ -38,24 +38,24 @@ public:
         None,
         ForceClosed
     };
-    explicit QBenchmarkNode(const std::string& nodeName,
+    explicit Node(const std::string& nodeName,
                             const std::string& threadId,
-                            QBenchmarkNode* parent,
+                            Node* parent,
                             ITimeProvider* provider) noexcept;
 
-    ~QBenchmarkNode() = default;
+    ~Node() = default;
 
-    bool operator==(const QBenchmarkNode& node) const;
-    bool operator!=(const QBenchmarkNode& node) const;
+    bool operator==(const Node& node) const;
+    bool operator!=(const Node& node) const;
 
-    friend std::ostream& operator<<(std::ostream& out, const QBenchmarkNode& node);
-    friend std::string& operator<<(std::string& out, const QBenchmarkNode& node);
+    friend std::ostream& operator<<(std::ostream& out, const Node& node);
+    friend std::string& operator<<(std::string& out, const Node& node);
 
-    QBenchmarkNode* addChild(const std::string& nodeName, const std::string& comment, const std::string& threadId);
-    QBenchmarkNode* addChild(const std::string& nodeName, const std::string& comment);
-    QBenchmarkNode* getNextOpenChild();
-    QBenchmarkNode* getRelativeByName(const std::string& nodeName);
-    QBenchmarkNode* getParent() const { return mParent; }
+    Node* addChild(const std::string& nodeName, const std::string& comment, const std::string& threadId);
+    Node* addChild(const std::string& nodeName, const std::string& comment);
+    Node* getNextOpenChild();
+    Node* getRelativeByName(const std::string& nodeName);
+    Node* getParent() const { return mParent; }
 
     void close(Flag flag = Flag::None);
     bool isClosed() { return mLocked; }
@@ -74,8 +74,8 @@ private:
     std::chrono::microseconds mStartTime;
     std::chrono::microseconds mEndTime;
     bool mLocked = false;
-    QBenchmarkNode* mParent = nullptr;
-    std::vector<std::unique_ptr<QBenchmarkNode>> mChildren;
+    Node* mParent = nullptr;
+    std::vector<std::unique_ptr<Node>> mChildren;
     int mLevel = 0;
     std::string mComment;
     Flag mFlag = Flag::None;

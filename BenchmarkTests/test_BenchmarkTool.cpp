@@ -5,9 +5,9 @@
 #include <memory>
 #include <iostream>
 
-#include <QBenchmark.h>
+#include <BenchmarkTool.h>
 
-using namespace QBenchmark;
+using namespace GitQlientTools;
 
 class MyTimeProvider : public ITimeProvider
 {
@@ -18,25 +18,25 @@ public:
 
 void helperFunctionInternal()
 {
-    QBenchmarkStart();
-    QBenchmarkEnd();
+    BenchmarkStart();
+    BenchmarkEnd();
 }
 
 void helperFunction()
 {
-    QBenchmarkStart();
+    BenchmarkStart();
     helperFunctionInternal();
-    QBenchmarkEnd();
+    BenchmarkEnd();
 }
 
-TEST_CASE("Init", "[QBenchmark]")
+TEST_CASE("Init", "[BenchmarkTool]")
 {
     std::shared_ptr<MyTimeProvider> time = std::make_shared<MyTimeProvider>();
-    QBenchmarkRegisterer::getInstance(time);
+    BenchmarkTool::getInstance(time);
     std::regex regex("^[ ]{0,}\\[[\\d]+\\] \\{[\\w _\\-\\(\\)\\:]+\\}\\s\\-\\s[\\w\\s]+[\\!]?$");
 
     std::string realOutput;
-    realOutput << QBenchmarkRegisterer::getInstance();
+    realOutput << BenchmarkTool::getInstance();
 
     std::vector<std::string> strings;
     std::istringstream f(realOutput);
@@ -46,17 +46,17 @@ TEST_CASE("Init", "[QBenchmark]")
     }
 }
 
-TEST_CASE("One API call", "[QBenchmark]")
+TEST_CASE("One API call", "[BenchmarkTool]")
 {
-    QBenchmarkRegisterer::getInstance();
+    BenchmarkTool::getInstance();
     std::regex regexFirstLine("^[ ]{0,}\\[[\\d]+\\] \\{[\\w _\\-\\(\\)\\:]+\\}\\s\\-\\s[\\w\\s]+[\\!]?$");
     std::regex regexOther("^[ ]{0,}\\[[\\d]+\\] \\{[\\w _\\-\\(\\)\\:]+\\} done in \\{[\\d]+.[\\d]+\\} msec.?$");
 
-    QBenchmarkStart();
-    QBenchmarkEnd();
+    BenchmarkStart();
+    BenchmarkEnd();
 
     std::string realOutput;
-    realOutput << QBenchmarkRegisterer::getInstance();
+    realOutput << BenchmarkTool::getInstance();
 
     std::vector<std::string> strings;
     std::istringstream f(realOutput);
@@ -74,18 +74,18 @@ TEST_CASE("One API call", "[QBenchmark]")
     REQUIRE(i == 2);
 }
 
-TEST_CASE("3 nested calls", "[QBenchmark]")
+TEST_CASE("3 nested calls", "[BenchmarkTool]")
 {
-    QBenchmarkRegisterer::getInstance();
+    BenchmarkTool::getInstance();
     std::regex regexFirstLine("^[ ]{0,}\\[[\\d]+\\] \\{[\\w _\\-\\(\\)\\:]+\\}\\s\\-\\s[\\w\\s]+[\\!]?$");
     std::regex regexOther("^[ ]{0,}\\[[\\d]+\\] \\{[\\w _\\-\\(\\)\\:]+\\} done in \\{[\\d]+.[\\d]+\\} msec.?$");
 
-    QBenchmarkStart();
+    BenchmarkStart();
     helperFunction();
-    QBenchmarkEnd();
+    BenchmarkEnd();
 
     std::string realOutput;
-    realOutput << QBenchmarkRegisterer::getInstance();
+    realOutput << BenchmarkTool::getInstance();
 
     std::vector<std::string> strings;
     std::istringstream f(realOutput);

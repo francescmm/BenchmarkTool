@@ -1,10 +1,10 @@
-#include "QBenchmarkNode.h"
+#include "Node.h"
 
-namespace QBenchmark
+namespace GitQlientTools
 {
 
-QBenchmarkNode::QBenchmarkNode(const std::string &nodeName, const std::string &threadId,
-                               QBenchmarkNode *parent, ITimeProvider* provider) noexcept
+Node::Node(const std::string &nodeName, const std::string &threadId,
+                               Node *parent, ITimeProvider* provider) noexcept
    : timeProvider(provider)
    , mNodeName(nodeName)
    , mParent(parent)
@@ -16,17 +16,17 @@ QBenchmarkNode::QBenchmarkNode(const std::string &nodeName, const std::string &t
    mStartTime = timeProvider->getTimeSinceEpochMsecs();
 }
 
-bool QBenchmarkNode::operator==(const QBenchmarkNode &node) const
+bool Node::operator==(const Node &node) const
 {
    return mNodeName == node.mNodeName && mStartTime == node.mStartTime && mLevel == node.mLevel;
 }
 
-bool QBenchmarkNode::operator!=(const QBenchmarkNode &node) const
+bool Node::operator!=(const Node &node) const
 {
     return !(*this == node);
 }
 
-std::string &operator<<(std::string &out, const QBenchmarkNode &node)
+std::string &operator<<(std::string &out, const Node &node)
 {
     for (auto i = 0; i < node.mLevel; ++i)
         out += "  ";
@@ -42,7 +42,7 @@ std::string &operator<<(std::string &out, const QBenchmarkNode &node)
         if (!node.mComment.empty())
             out += " - Comments {" + node.mComment + "}";
 
-        if (node.mFlag != QBenchmarkNode::Flag::None)
+        if (node.mFlag != Node::Flag::None)
             out.append(" - Force closed");
     }
 
@@ -54,7 +54,7 @@ std::string &operator<<(std::string &out, const QBenchmarkNode &node)
     return out;
 }
 
-std::ostream &operator<<(std::ostream &out, const QBenchmarkNode &node)
+std::ostream &operator<<(std::ostream &out, const Node &node)
 {
    std::string msg;
 
@@ -64,23 +64,23 @@ std::ostream &operator<<(std::ostream &out, const QBenchmarkNode &node)
    return out;
 }
 
-QBenchmarkNode *QBenchmarkNode::addChild(const std::string &nodeName, const std::string &threadId)
+Node *Node::addChild(const std::string &nodeName, const std::string &threadId)
 {
-   mChildren.push_back(std::make_unique<QBenchmarkNode>(nodeName, threadId, this, this->timeProvider));
+   mChildren.push_back(std::make_unique<Node>(nodeName, threadId, this, this->timeProvider));
 
    return mChildren.back().get();
 }
 
-QBenchmarkNode *QBenchmarkNode::addChild(const std::string &nodeName, const std::string &comment,
+Node *Node::addChild(const std::string &nodeName, const std::string &comment,
                                          const std::string &threadId)
 {
-   mChildren.push_back(std::make_unique<QBenchmarkNode>(nodeName, threadId, this, this->timeProvider));
+   mChildren.push_back(std::make_unique<Node>(nodeName, threadId, this, this->timeProvider));
    mChildren.back()->addComment(comment);
 
    return mChildren.back().get();
 }
 
-QBenchmarkNode *QBenchmarkNode::getNextOpenChild()
+Node *Node::getNextOpenChild()
 {
    for (const auto &child : mChildren)
    {
@@ -94,7 +94,7 @@ QBenchmarkNode *QBenchmarkNode::getNextOpenChild()
    return this;
 }
 
-QBenchmarkNode *QBenchmarkNode::getRelativeByName(const std::string &nodeName)
+Node *Node::getRelativeByName(const std::string &nodeName)
 {
    if (mParent)
    {
@@ -111,7 +111,7 @@ QBenchmarkNode *QBenchmarkNode::getRelativeByName(const std::string &nodeName)
    return nullptr;
 }
 
-void QBenchmarkNode::close(Flag flag)
+void Node::close(Flag flag)
 {
    if (!mLocked)
    {
@@ -127,7 +127,7 @@ void QBenchmarkNode::close(Flag flag)
    }
 }
 
-double QBenchmarkNode::getDuration() const
+double Node::getDuration() const
 {
    return mLocked ? static_cast<double>((mEndTime.count() - mStartTime.count()) / 1000) : -1;
 }

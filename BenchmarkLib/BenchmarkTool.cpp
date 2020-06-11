@@ -1,47 +1,47 @@
-#include "QBenchmark.h"
+#include "BenchmarkTool.h"
 
-#include "QBenchmarkNode.h"
+#include "Node.h"
 
 #include <fstream>
 
-namespace QBenchmark
+namespace GitQlientTools
 {
 
-QBenchmarkRegisterer &QBenchmarkRegisterer::getInstance(std::shared_ptr<ITimeProvider> timeProvider)
+BenchmarkTool &BenchmarkTool::getInstance(std::shared_ptr<ITimeProvider> timeProvider)
 {
-   static QBenchmarkRegisterer instance(timeProvider);
+   static BenchmarkTool instance(timeProvider);
 
    return instance;
 }
 
-QBenchmarkRegisterer::QBenchmarkRegisterer(std::shared_ptr<ITimeProvider> timeProvider)
+BenchmarkTool::BenchmarkTool(std::shared_ptr<ITimeProvider> timeProvider)
    : mTimeProvider(timeProvider)
 {
    std::stringstream ss;
    ss << std::this_thread::get_id();
 
    mThreadId = ss.str();
-   mRootNode = std::make_unique<QBenchmarkNode>("QBenchmarkRegisterer", mThreadId, nullptr, mTimeProvider.get());
+   mRootNode = std::make_unique<Node>("BenchmarkTool", mThreadId, nullptr, mTimeProvider.get());
    mActiveNode[mThreadId] = mRootNode.get();
 }
 
-QBenchmarkRegisterer::~QBenchmarkRegisterer()
+BenchmarkTool::~BenchmarkTool()
 {
    mRootNode->close();
 
    std::ofstream myfile;
-   myfile.open("logs/QBenchmark.txt", std::ios::out | std::ios::app);
+   myfile.open("logs/BenchmarkTool.txt", std::ios::out | std::ios::app);
    myfile << (*mRootNode.get());
    myfile.flush();
    myfile.close();
 }
 
-void QBenchmarkRegisterer::startBenchmark(const std::string &methodName)
+void BenchmarkTool::startBenchmark(const std::string &methodName)
 {
    startBenchmark(methodName, "");
 }
 
-void QBenchmarkRegisterer::startBenchmark(const std::string &methodName, const std::string &comment)
+void BenchmarkTool::startBenchmark(const std::string &methodName, const std::string &comment)
 {
    std::lock_guard<std::mutex> lock { mMutex };
 
@@ -56,7 +56,7 @@ void QBenchmarkRegisterer::startBenchmark(const std::string &methodName, const s
       mActiveNode[threadId] = mRootNode->addChild(methodName, comment, threadId);
 }
 
-void QBenchmarkRegisterer::endBenchmark(const std::string &methodName)
+void BenchmarkTool::endBenchmark(const std::string &methodName)
 {
    std::lock_guard<std::mutex> lock { mMutex };
 
@@ -80,14 +80,14 @@ void QBenchmarkRegisterer::endBenchmark(const std::string &methodName)
    }
 }
 
-std::string &operator<<(std::string &out, const QBenchmarkRegisterer &node)
+std::string &operator<<(std::string &out, const BenchmarkTool &node)
 {
     out << (*node.mRootNode.get());
 
     return out;
 }
 
-std::ostream &operator<<(std::ostream &out, const QBenchmarkRegisterer &node)
+std::ostream &operator<<(std::ostream &out, const BenchmarkTool &node)
 {
    out << (*node.mRootNode.get());
 

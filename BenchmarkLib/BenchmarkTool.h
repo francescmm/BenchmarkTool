@@ -1,7 +1,7 @@
 ﻿#pragma once
 
 /****************************************************************************************
- ** QBenchmark is a library to register benchmarks of a process.
+ ** BenchmarkTool is a library to register benchmarks of a process.
  **
  ** LinkedIn: www.linkedin.com/in/cescmm/
  ** Web: www.francescmm.com
@@ -29,18 +29,18 @@
 #include <map>
 #include <iostream>
 
-#include <QBenchmarkNode.h>
-#include "QBenchmarkTimeProvider.h"
+#include <Node.h>
+#include "TimeProvider.h"
 
 #include <sstream>
 #include <memory>
 
-namespace QBenchmark
+namespace GitQlientTools
 {
 
-class QBenchmarkNode;
+class Node;
 
-class QBenchmarkRegisterer
+class BenchmarkTool
 {
 public:
    enum class OutputFormat
@@ -48,9 +48,9 @@ public:
       PlainText
    };
 
-   static QBenchmarkRegisterer &getInstance(std::shared_ptr<ITimeProvider> timeProvider = std::make_shared<QBenchmarkTimeProvider>());
+   static BenchmarkTool &getInstance(std::shared_ptr<ITimeProvider> timeProvider = std::make_shared<TimeProvider>());
 
-   ~QBenchmarkRegisterer();
+   ~BenchmarkTool();
 
    void startBenchmark(const std::string &methodName);
    void startBenchmark(const std::string &methodName, const std::string &comment);
@@ -58,40 +58,40 @@ public:
 
    void setOutputFormat(OutputFormat outputFormat) { mFileFormat = outputFormat; }
 
-   friend std::string &operator<<(std::string &out, const QBenchmarkRegisterer &node);
-   friend std::ostream &operator<<(std::ostream &out, const QBenchmarkRegisterer &node);
+   friend std::string &operator<<(std::string &out, const BenchmarkTool &node);
+   friend std::ostream &operator<<(std::ostream &out, const BenchmarkTool &node);
 
 private:
-   QBenchmarkRegisterer(std::shared_ptr<ITimeProvider> timeProvider);
+   BenchmarkTool(std::shared_ptr<ITimeProvider> timeProvider);
 
    std::shared_ptr<ITimeProvider> mTimeProvider = nullptr;
    std::mutex mMutex;
-   std::unique_ptr<QBenchmarkNode> mRootNode;
-   std::map<std::string, QBenchmarkNode *> mActiveNode;
+   std::unique_ptr<Node> mRootNode;
+   std::map<std::string, Node *> mActiveNode;
    std::string mThreadId;
    OutputFormat mFileFormat = OutputFormat::PlainText;
 };
 
 #ifndef PLATFORM_WINDOWS
-#ifndef QBenchmarkStart
-#   define QBenchmarkStart() QBenchmarkRegisterer::getInstance().startBenchmark(__PRETTY_FUNCTION__)
-#   define QBenchmarkStartMsg(msg) QBenchmarkRegisterer::getInstance().startBenchmark(__PRETTY_FUNCTION__, msg)
+#ifndef BenchmarkStart
+#   define BenchmarkStart() BenchmarkTool::getInstance().startBenchmark(__PRETTY_FUNCTION__)
+#   define BenchmarkStartMsg(msg) BenchmarkTool::getInstance().startBenchmark(__PRETTY_FUNCTION__, msg)
 #endif
 #else
-#ifndef QBenchmarkStart
-#   define QBenchmarkStart() QBenchmarkRegisterer::getInstance().startBenchmark(__FUNCSIG__)
-#   define QBenchmarkStartMsg(msg) QBenchmarkRegisterer::getInstance().startBenchmark(__FUNCSIG__, msg)
+#ifndef BenchmarkStart
+#   define BenchmarkStart() BenchmarkTool::getInstance().startBenchmark(__FUNCSIG__)
+#   define BenchmarkStartMsg(msg) BenchmarkTool::getInstance().startBenchmark(__FUNCSIG__, msg)
 #endif
 #endif
 
 
 #ifndef PLATFORM_WINDOWS
-#ifndef QBenchmarkEnd
-#   define QBenchmarkEnd() QBenchmarkRegisterer::getInstance().endBenchmark(__PRETTY_FUNCTION__)
+#ifndef BenchmarkEnd
+#   define BenchmarkEnd() BenchmarkTool::getInstance().endBenchmark(__PRETTY_FUNCTION__)
 #endif
 #else
-#ifndef QBenchmarkEnd
-#   define QBenchmarkEnd() QBenchmarkRegisterer::getInstance().endBenchmark(__FUNCSIG__)
+#ifndef BenchmarkEnd
+#   define BenchmarkEnd() BenchmarkTool::getInstance().endBenchmark(__FUNCSIG__)
 #endif
 #endif
 

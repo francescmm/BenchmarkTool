@@ -6,12 +6,12 @@ CONFIG += c++17
 
 TEMPLATE = app
 
-INCLUDEPATH += $$PWD/../QBenchmarkLib
+INCLUDEPATH += $$PWD/../BenchmarkLib
 INCLUDEPATH += $$PWD/catch2
 
-include($$PWD/../QBenchmarkLib/QBenchmark.pri)
+include($$PWD/../BenchmarkLib/BenchmarkTool.pri)
 
 SOURCES +=  \
     main.cpp \
-    test_QBenchmark.cpp \
-    test_QBenchmarkNode.cpp
+    test_BenchmarkTool.cpp \
+    test_Node.cpp
