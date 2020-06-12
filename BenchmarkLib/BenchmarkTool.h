@@ -21,19 +21,14 @@
  ** Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
  ***************************************************************************************/
 
-#include <string>
-#include <memory>
-#include <mutex>
-#include <atomic>
-#include <thread>
-#include <map>
-#include <iostream>
-
 #include <Node.h>
 #include "TimeProvider.h"
 
+#include <mutex>
+#include <thread>
+#include <map>
+#include <iostream>
 #include <sstream>
-#include <memory>
 
 namespace GitQlientTools
 {
@@ -73,26 +68,25 @@ private:
 };
 
 #ifndef PLATFORM_WINDOWS
-#ifndef BenchmarkStart
-#   define BenchmarkStart() BenchmarkTool::getInstance().startBenchmark(__PRETTY_FUNCTION__)
-#   define BenchmarkStartMsg(msg) BenchmarkTool::getInstance().startBenchmark(__PRETTY_FUNCTION__, msg)
-#endif
+#   ifndef BenchmarkStart
+#      define BenchmarkStart() BenchmarkTool::getInstance().startBenchmark(__PRETTY_FUNCTION__)
+#      define BenchmarkStartMsg(msg) BenchmarkTool::getInstance().startBenchmark(__PRETTY_FUNCTION__, msg)
+#   endif
 #else
-#ifndef BenchmarkStart
-#   define BenchmarkStart() BenchmarkTool::getInstance().startBenchmark(__FUNCSIG__)
-#   define BenchmarkStartMsg(msg) BenchmarkTool::getInstance().startBenchmark(__FUNCSIG__, msg)
+#   ifndef BenchmarkStart
+#      define BenchmarkStart() BenchmarkTool::getInstance().startBenchmark(__FUNCSIG__)
+#      define BenchmarkStartMsg(msg) BenchmarkTool::getInstance().startBenchmark(__FUNCSIG__, msg)
+#   endif
 #endif
-#endif
-
 
 #ifndef PLATFORM_WINDOWS
-#ifndef BenchmarkEnd
-#   define BenchmarkEnd() BenchmarkTool::getInstance().endBenchmark(__PRETTY_FUNCTION__)
-#endif
+#   ifndef BenchmarkEnd
+#      define BenchmarkEnd() BenchmarkTool::getInstance().endBenchmark(__PRETTY_FUNCTION__)
+#   endif
 #else
-#ifndef BenchmarkEnd
-#   define BenchmarkEnd() BenchmarkTool::getInstance().endBenchmark(__FUNCSIG__)
-#endif
+#   ifndef BenchmarkEnd
+#      define BenchmarkEnd() BenchmarkTool::getInstance().endBenchmark(__FUNCSIG__)
+#   endif
 #endif
 
 }
