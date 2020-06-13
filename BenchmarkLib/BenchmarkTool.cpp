@@ -82,9 +82,9 @@ void BenchmarkTool::endBenchmark(const std::string &methodName)
 
 std::string &operator<<(std::string &out, const BenchmarkTool &node)
 {
-    out << (*node.mRootNode.get());
+   out << (*node.mRootNode.get());
 
-    return out;
+   return out;
 }
 
 std::ostream &operator<<(std::ostream &out, const BenchmarkTool &node)
