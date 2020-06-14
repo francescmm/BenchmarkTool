@@ -33,53 +33,60 @@ namespace GitQlientTools
 class Node
 {
 public:
-    enum class Flag
-    {
-        None,
-        ForceClosed
-    };
-    explicit Node(const std::string& nodeName,
-                            const std::string& threadId,
-                            Node* parent,
-                            ITimeProvider* provider) noexcept;
+   struct MinimalData
+   {
+      std::string mNodeName;
+      double duration;
+   };
+   enum class Flag
+   {
+      None,
+      ForceClosed
+   };
+   explicit Node(const std::string &nodeName, const std::string &threadId, Node *parent,
+                 ITimeProvider *provider) noexcept;
 
-    ~Node() = default;
+   ~Node() = default;
 
-    bool operator==(const Node& node) const;
-    bool operator!=(const Node& node) const;
+   bool operator==(const Node &node) const;
+   bool operator!=(const Node &node) const;
 
-    friend std::ostream& operator<<(std::ostream& out, const Node& node);
-    friend std::string& operator<<(std::string& out, const Node& node);
+   friend std::ostream &operator<<(std::ostream &out, const Node &node);
+   friend std::string &operator<<(std::string &out, const Node &node);
 
-    Node* addChild(const std::string& nodeName, const std::string& comment, const std::string& threadId);
-    Node* addChild(const std::string& nodeName, const std::string& comment);
-    Node* getNextOpenChild();
-    Node* getRelativeByName(const std::string& nodeName);
-    Node* getParent() const { return mParent; }
+   Node *addChild(const std::string &nodeName, const std::string &comment, const std::string &threadId);
+   Node *addChild(const std::string &nodeName, const std::string &comment);
+   Node *getNextOpenChild();
+   Node *getRelativeByName(const std::string &nodeName);
+   Node *getParent() const { return mParent; }
+   std::vector<MinimalData> getForceClosedChildren() const;
 
-    void close(Flag flag = Flag::None);
-    bool isClosed() { return mLocked; }
+   void close(Flag flag = Flag::None);
+   bool isClosed() { return mLocked; }
+   bool isForceClosed() { return mLocked && mFlag == Flag::ForceClosed; }
 
-    std::string getNodeName() const { return mNodeName; }
-    int getLevel() const { return mLevel; }
+   std::string getNodeName() const { return mNodeName; }
+   int getLevel() const { return mLevel; }
 
-    double getDuration() const;
+   double getDuration() const;
 
-    void addComment(const std::string& comment) { mComment = comment; }
+   void addComment(const std::string &comment) { mComment = comment; }
+
+   MinimalData getMinimalData() { return MinimalData { mNodeName, getDuration() }; }
 
 private:
-    ITimeProvider* timeProvider = nullptr;
+   ITimeProvider *timeProvider = nullptr;
 
-    std::string mNodeName;
-    std::chrono::microseconds mStartTime;
-    std::chrono::microseconds mEndTime;
-    bool mLocked = false;
-    Node* mParent = nullptr;
-    std::vector<std::unique_ptr<Node>> mChildren;
-    int mLevel = 0;
-    std::string mComment;
-    Flag mFlag = Flag::None;
-    std::string mThreadId;
+   std::string mNodeName;
+   std::chrono::microseconds mStartTime;
+   std::chrono::microseconds mEndTime;
+   bool mLocked = false;
+   Node *mParent = nullptr;
+   std::vector<std::unique_ptr<Node>> mChildren;
+   int mLevel = 0;
+   std::string mComment;
+   Flag mFlag = Flag::None;
+   std::string mThreadId;
 };
 
 }

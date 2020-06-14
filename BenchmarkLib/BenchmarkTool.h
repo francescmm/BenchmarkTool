@@ -21,14 +21,14 @@
  ** Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
  ***************************************************************************************/
 
-#include <Node.h>
-#include "TimeProvider.h"
+#include <TimeProvider.h>
+#include <BenchmarkCallback.h>
 
 #include <mutex>
 #include <thread>
 #include <map>
-#include <iostream>
 #include <sstream>
+#include <atomic>
 
 namespace GitQlientTools
 {
@@ -53,6 +53,9 @@ public:
 
    void setOutputFormat(OutputFormat outputFormat) { mFileFormat = outputFormat; }
 
+   int addListener(ListenerCallback callback);
+   void removeListener(int listenerId);
+
    friend std::string &operator<<(std::string &out, const BenchmarkTool &node);
    friend std::ostream &operator<<(std::ostream &out, const BenchmarkTool &node);
 
@@ -65,6 +68,9 @@ private:
    std::map<std::string, Node *> mActiveNode;
    std::string mThreadId;
    OutputFormat mFileFormat = OutputFormat::PlainText;
+   std::mutex mListenersMutex;
+   std::atomic<int> mListenerId { 0 };
+   std::map<int, ListenerCallback> mListeners;
 };
 
 #ifndef PLATFORM_WINDOWS

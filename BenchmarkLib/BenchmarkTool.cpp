@@ -71,13 +71,49 @@ void BenchmarkTool::endBenchmark(const std::string &methodName)
    if (iter->second->getNodeName() == methodName)
    {
       iter->second->close();
+
+      for (const auto &listenerIter : mListeners)
+      {
+         listenerIter.second(StatisticsData { iter->second->getNodeName(), iter->second->getDuration() });
+
+         for (auto &child : iter->second->getForceClosedChildren())
+            listenerIter.second(StatisticsData { child.mNodeName, child.duration });
+      }
+
       mActiveNode[threadId] = iter->second->getNextOpenChild();
    }
    else if (auto node = iter->second->getRelativeByName(methodName))
    {
       node->close();
+
+      for (const auto &listenerIter : mListeners)
+      {
+         listenerIter.second(StatisticsData { node->getNodeName(), node->getDuration() });
+
+         for (auto &child : node->getForceClosedChildren())
+            listenerIter.second(StatisticsData { child.mNodeName, child.duration });
+      }
+
       mActiveNode[threadId] = node->getParent();
    }
+}
+
+int BenchmarkTool::addListener(ListenerCallback callback)
+{
+   std::lock_guard<std::mutex> lock(mListenersMutex);
+
+   const auto id = ++mListenerId;
+
+   mListeners.emplace(id, std::move(callback));
+   return id;
+}
+
+void BenchmarkTool::removeListener(int listenerId)
+{
+   std::lock_guard<std::mutex> lock(mListenersMutex);
+
+   if (auto iter = mListeners.find(listenerId); iter != mListeners.end())
+      mListeners.erase(iter);
 }
 
 std::string &operator<<(std::string &out, const BenchmarkTool &node)
