@@ -9,10 +9,18 @@ namespace GitQlientTools
 BenchmarkTracker::BenchmarkTracker(BenchmarkTool &benchmarkTool)
    : mBenchmarkTool(benchmarkTool)
 {
+   mListenerId = mBenchmarkTool.addListener([this](StatisticsData data) { onDataReceived(data); });
+}
+
+BenchmarkTracker::~BenchmarkTracker()
+{
+   mBenchmarkTool.removeListener(mListenerId);
 }
 
 void BenchmarkTracker::onDataReceived(StatisticsData data)
 {
+   std::lock_guard locker(mMutex);
+
    BenchmarkTrackerData trackerData;
    trackerData.method = data.methodName;
 
@@ -24,8 +32,7 @@ void BenchmarkTracker::onDataReceived(StatisticsData data)
    mAggregatedData[data.methodName] = trackerData;
 }
 
-void BenchmarkTracker::calculateData(const double executionTimeInMsecs,
-                                     BenchmarkTracker::BenchmarkTrackerData &trackerData)
+void BenchmarkTracker::calculateData(const double executionTimeInMsecs, BenchmarkTrackerData &trackerData)
 {
    if (executionTimeInMsecs <= 10)
       ++trackerData.processTime_0_10_msecs;

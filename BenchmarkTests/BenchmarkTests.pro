@@ -14,4 +14,5 @@ include($$PWD/../BenchmarkLib/BenchmarkTool.pri)
 SOURCES +=  \
     main.cpp \
     test_BenchmarkTool.cpp \
+    test_BenchmarkTracker.cpp \
     test_Node.cpp
