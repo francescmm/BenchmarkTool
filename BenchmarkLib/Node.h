@@ -38,7 +38,7 @@
 
 #include <TimeProvider.h>
 
-namespace GitQlientTools
+namespace Benchmarker
 {
 
 class Node

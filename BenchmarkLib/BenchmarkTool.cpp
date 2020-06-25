@@ -4,7 +4,7 @@
 
 #include <fstream>
 
-namespace GitQlientTools
+namespace Benchmarker
 {
 
 BenchmarkTool &BenchmarkTool::getInstance(std::shared_ptr<ITimeProvider> timeProvider)

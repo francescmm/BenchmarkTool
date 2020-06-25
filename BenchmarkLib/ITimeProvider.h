@@ -33,7 +33,7 @@
 
 #include <chrono>
 
-namespace GitQlientTools
+namespace Benchmarker
 {
 
 class ITimeProvider

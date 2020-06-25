@@ -4,7 +4,7 @@
 
 #include <Node.h>
 
-using namespace GitQlientTools;
+using namespace Benchmarker;
 
 class MyTimeProvider : public ITimeProvider
 {

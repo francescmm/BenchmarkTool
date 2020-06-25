@@ -36,7 +36,7 @@
 #include <map>
 #include <mutex>
 
-namespace GitQlientTools
+namespace Benchmarker
 {
 
 class BenchmarkTool;

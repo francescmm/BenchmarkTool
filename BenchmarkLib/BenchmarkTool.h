@@ -40,7 +40,7 @@
 #include <sstream>
 #include <atomic>
 
-namespace GitQlientTools
+namespace Benchmarker
 {
 
 class Node;

@@ -4,7 +4,7 @@
 
 #include <utility>
 
-namespace GitQlientTools
+namespace Benchmarker
 {
 BenchmarkTracker::BenchmarkTracker(BenchmarkTool &benchmarkTool)
    : mBenchmarkTool(benchmarkTool)

@@ -35,7 +35,7 @@
 #include <chrono>
 #include <string>
 
-namespace GitQlientTools
+namespace Benchmarker
 {
 
 struct StatisticsData

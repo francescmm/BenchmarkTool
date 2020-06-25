@@ -3,7 +3,7 @@
 #include <BenchmarkTool.h>
 #include <BenchmarkTracker.h>
 
-using namespace GitQlientTools;
+using namespace Benchmarker;
 
 void trackerHelperFunctionInternal()
 {

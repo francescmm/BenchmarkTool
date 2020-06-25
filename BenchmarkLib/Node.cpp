@@ -1,6 +1,6 @@
 #include "Node.h"
 
-namespace GitQlientTools
+namespace Benchmarker
 {
 
 Node::Node(const std::string &nodeName, const std::string &threadId, Node *parent, ITimeProvider *provider) noexcept

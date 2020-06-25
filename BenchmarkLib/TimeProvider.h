@@ -33,7 +33,7 @@
 
 #include <ITimeProvider.h>
 
-namespace GitQlientTools
+namespace Benchmarker
 {
 
 class TimeProvider : public ITimeProvider
